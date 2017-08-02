@@ -796,11 +796,10 @@ class UBlox:
             msg.unpack()
             if msg.usePPP != self.preferred_usePPP:
                 msg.usePPP = self.preferred_usePPP
-                msg.mask = 1<<13
+                msg.mask = 1 << 13
                 msg.pack()
                 self.send(msg)
                 self.configure_poll(CLASS_CFG, MSG_CFG_NAVX5)
-
 
     def receive_message(self, ignore_eof=False):
       '''blocking receive of one ublox message'''
