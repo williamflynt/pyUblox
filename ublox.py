@@ -753,7 +753,7 @@ class UBlox:
     def send_nmea(self, msg):
         if not self.read_only:
             s = msg + "*%02X" % self.nmea_checksum(msg)
-            self.write(s)
+            self.write(s.encode())
 
     def set_binary(self):
       '''put a UBlox into binary mode using a NMEA string'''
