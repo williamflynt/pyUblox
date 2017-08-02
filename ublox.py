@@ -616,13 +616,13 @@ class UBloxMessage:
 
     def checksum(self, data=None):
         '''return a checksum tuple for a message'''
-        if data is None:
+        if not data:
             data = self._buf[2:-2]
-        cs = 0
+        # cs = 0
         ck_a = 0
         ck_b = 0
         for i in data:
-            ck_a = (ck_a + ord(i)) & 0xFF
+            ck_a = (ck_a + i) & 0xFF
             ck_b = (ck_b + ck_a) & 0xFF
         return (ck_a, ck_b)
 
