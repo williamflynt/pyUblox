@@ -506,7 +506,7 @@ msg_types = {
 class UBloxMessage:
     '''UBlox message class - holds a UBX binary message'''
     def __init__(self):
-        self._buf = ""
+        self._buf = bytes()
         self._fields = {}
         self._recs = []
         self._unpacked = False
@@ -575,11 +575,11 @@ class UBloxMessage:
 
     def msg_class(self):
         '''return the message class'''
-        return ord(self._buf[2])
+        return self._buf[2]
 
     def msg_id(self):
         '''return the message id within the class'''
-        return ord(self._buf[3])
+        return self._buf[3]
 
     def msg_type(self):
         '''return the message type tuple (class, id)'''
@@ -592,9 +592,9 @@ class UBloxMessage:
 
     def valid_so_far(self):
         '''check if the message is valid so far'''
-        if len(self._buf) > 0 and ord(self._buf[0]) != PREAMBLE1:
+        if len(self._buf) > 0 and self._buf[0] != PREAMBLE1:
             return False
-        if len(self._buf) > 1 and ord(self._buf[1]) != PREAMBLE2:
+        if len(self._buf) > 1 and self._buf[1] != PREAMBLE2:
             self.debug(1, "bad pre2")
             return False
         if self.needed_bytes() == 0 and not self.valid():
