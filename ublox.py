@@ -802,85 +802,85 @@ class UBlox:
                 self.configure_poll(CLASS_CFG, MSG_CFG_NAVX5)
 
     def receive_message(self, ignore_eof=False):
-      '''blocking receive of one ublox message'''
-      msg = UBloxMessage()
-      while True:
-          n = msg.needed_bytes()
-          b = self.read(n)
-          if not b:
-              if ignore_eof:
-                  time.sleep(0.01)
-                  continue
-              return None
-          msg.add(b)
-          if self.log is not None:
-              self.log.write(b)
-              self.log.flush()
-          if msg.valid():
-              self.special_handling(msg)
-              return msg
+        '''blocking receive of one ublox message'''
+        msg = UBloxMessage()
+        while True:
+            n = msg.needed_bytes()
+            b = self.read(n)
+            if not b:
+                if ignore_eof:
+                    time.sleep(0.01)
+                    continue
+                return None
+            msg.add(b)
+            if self.log is not None:
+                self.log.write(b)
+                self.log.flush()
+            if msg.valid():
+                self.special_handling(msg)
+                return msg
 
     def receive_message_noerror(self, ignore_eof=False):
-      '''blocking receive of one ublox message, ignoring errors'''
-      try:
-          return self.receive_message(ignore_eof=ignore_eof)
-      except UBloxError as e:
-          print(e)
-          return None
-      except OSError as e:
-          # Occasionally we get hit with 'resource temporarily unavailable'
-          # messages here on the serial device, catch them too.
-          print(e)
-          return None
+        '''blocking receive of one ublox message, ignoring errors'''
+        try:
+            return self.receive_message(ignore_eof=ignore_eof)
+        except UBloxError as e:
+            print(e)
+            return None
+        except OSError as e:
+            # Occasionally we get hit with 'resource temporarily unavailable'
+            # messages here on the serial device, catch them too.
+            print(e)
+            return None
 
     def send(self, msg):
-      '''send a preformatted ublox message'''
-      if not msg.valid():
-          self.debug(1, "invalid send")
-          return
-      if not self.read_only:
-          self.write(msg._buf)        
+        '''send a preformatted ublox message'''
+        if not msg.valid():
+            self.debug(1, "invalid send")
+            return
+        if not self.read_only:
+            self.write(msg._buf)
 
     def send_message(self, msg_class, msg_id, payload):
-      '''send a ublox message with class, id and payload'''
-      msg = UBloxMessage()
-      msg._buf = struct.pack('<BBBBH', 0xb5, 0x62, msg_class, msg_id, len(payload))
-      msg._buf += payload
-      (ck_a, ck_b) = msg.checksum(msg._buf[2:])
-      msg._buf += struct.pack('<BB', ck_a, ck_b)
-      self.send(msg)
+        '''send a ublox message with class, id and payload'''
+        msg = UBloxMessage()
+        msg._buf = struct.pack('<BBBBH', 0xb5, 0x62, msg_class, msg_id, len(payload))
+        msg._buf += payload
+        (ck_a, ck_b) = msg.checksum(msg._buf[2:])
+        msg._buf += struct.pack('<BB', ck_a, ck_b)
+        self.send(msg)
 
     def configure_solution_rate(self, rate_ms=200, nav_rate=1, timeref=0):
-      '''configure the solution rate in milliseconds'''
-      payload = struct.pack('<HHH', rate_ms, nav_rate, timeref)
-      self.send_message(CLASS_CFG, MSG_CFG_RATE, payload)
+        '''configure the solution rate in milliseconds'''
+        payload = struct.pack('<HHH', rate_ms, nav_rate, timeref)
+        self.send_message(CLASS_CFG, MSG_CFG_RATE, payload)
 
     def configure_message_rate(self, msg_class, msg_id, rate):
-      '''configure the message rate for a given message'''
-      payload = struct.pack('<BBB', msg_class, msg_id, rate)
-      self.send_message(CLASS_CFG, MSG_CFG_SET_RATE, payload)
+        '''configure the message rate for a given message'''
+        payload = struct.pack('<BBB', msg_class, msg_id, rate)
+        self.send_message(CLASS_CFG, MSG_CFG_SET_RATE, payload)
 
     def configure_port(self, port=1, inMask=3, outMask=3, mode=2240, baudrate=None):
-      '''configure a IO port'''
-      if baudrate is None:
-          baudrate = self.baudrate
-      payload = struct.pack('<BBHIIHHHH', port, 0xff, 0, mode, baudrate, inMask, outMask, 0xFFFF, 0xFFFF)
-      self.send_message(CLASS_CFG, MSG_CFG_PRT, payload)
+        '''configure a IO port'''
+        if baudrate is None:
+            baudrate = self.baudrate
+        payload = struct.pack('<BBHIIHHHH', port, 0xff, 0, mode, baudrate, inMask, outMask, 0xFFFF, 0xFFFF)
+        self.send_message(CLASS_CFG, MSG_CFG_PRT, payload)
 
     def configure_loadsave(self, clearMask=0, saveMask=0, loadMask=0, deviceMask=0):
-      '''configure configuration load/save'''
-      payload = struct.pack('<IIIB', clearMask, saveMask, loadMask, deviceMask)
-      self.send_message(CLASS_CFG, MSG_CFG_CFG, payload)
+        '''configure configuration load/save'''
+        payload = struct.pack('<IIIB', clearMask, saveMask, loadMask, deviceMask)
+        self.send_message(CLASS_CFG, MSG_CFG_CFG, payload)
 
-    def configure_poll(self, msg_class, msg_id, payload=''):
-      '''poll a configuration message'''
-      self.send_message(msg_class, msg_id, payload)
+    def configure_poll(self, msg_class, msg_id, payload=bytes()):
+        '''poll a configuration message'''
+        self.send_message(msg_class, msg_id, payload)
 
     def configure_poll_port(self, portID=None):
       '''poll a port configuration'''
       if portID is None:
           self.configure_poll(CLASS_CFG, MSG_CFG_PRT)
-      else:
+      else:     
           self.configure_poll(CLASS_CFG, MSG_CFG_PRT, struct.pack('<B', portID))
 
     def configure_min_max_sats(self, min_sats=4, max_sats=32):
