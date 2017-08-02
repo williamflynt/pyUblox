@@ -605,9 +605,9 @@ class UBloxMessage:
             return False
         return True
 
-    def add(self, bytes):
+    def add(self, input_bytes):
         '''add some bytes to a message'''
-        self._buf += bytes
+        self._buf += input_bytes
         while not self.valid_so_far() and len(self._buf) > 0:
           # handle corrupted streams
           self._buf = self._buf[1:]
