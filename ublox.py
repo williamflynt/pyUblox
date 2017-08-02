@@ -6,6 +6,11 @@ Copyright Andrew Tridgell, October 2012
 Released under GNU GPL version 3 or later
 '''
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from builtins import bytes
+
 import struct
 from datetime import datetime
 import time, os
