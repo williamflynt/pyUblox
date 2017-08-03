@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import ublox, sys
-
+import ublox
+import sys
 from optparse import OptionParser
 
 parser = OptionParser("ublox_capture.py [options]")
@@ -24,7 +24,7 @@ dev.set_logfile(opts.log, append=opts.append)
 dev.set_binary()
 dev.configure_poll_port()
 dev.configure_poll(ublox.CLASS_CFG, ublox.MSG_CFG_USB)
-#dev.configure_poll(ublox.CLASS_MON, ublox.MSG_MON_HW)
+dev.configure_poll(ublox.CLASS_MON, ublox.MSG_MON_HW)
 dev.configure_port(port=ublox.PORT_SERIAL1, inMask=1, outMask=0)
 dev.configure_port(port=ublox.PORT_USB, inMask=1, outMask=1)
 dev.configure_port(port=ublox.PORT_SERIAL2, inMask=1, outMask=0)
@@ -53,19 +53,40 @@ dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
 dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 #dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 5)
 
-while True:
-    msg = dev.receive_message()
-    if msg is None:
-        if opts.reopen:
-            dev.close()
-            dev = ublox.UBlox(opts.port, baudrate=opts.baudrate, timeout=2)
-            dev.set_logfile(opts.log, append=True)
-            sys.stdout.write('R')
-            continue
-        break
-    if opts.show:
-        print(str(msg))
-        sys.stdout.flush()
-    elif opts.dots:
-        sys.stdout.write('.')
-        sys.stdout.flush()
+dev.configure_message_rate(ublox.CLASS_MON, ublox.MSG_MON_HW, 1)
+
+import bitarray
+
+if __name__ == '__main__':
+    try:
+        while True:
+            msg = dev.receive_message()
+            if msg is None:
+                if opts.reopen:
+                    dev.close()
+                    dev = ublox.UBlox(opts.port, baudrate=opts.baudrate, timeout=2)
+                    dev.set_logfile(opts.log, append=True)
+                    sys.stdout.write('R')
+                    continue
+                break
+            if opts.show:
+                if msg.msg_type() == (ublox.CLASS_MON, ublox.MSG_MON_HW):
+                    if not msg.valid():
+                        print("Invalid message..")
+                        continue
+
+                    if not msg.unpacked:
+                        msg.unpack()
+                    #  print("Name = {}".format(msg.name()))
+                    #  print(" Fields = {}".format(msg.fields))
+                    fields = msg.fields
+                    jam_ind = fields.get('jamInd')
+                    print("jamInd = {}".format(jam_ind))
+
+                    sys.stdout.flush()
+            elif opts.dots:
+                sys.stdout.write('.')
+                sys.stdout.flush()
+    except KeyboardInterrupt:
+        print("Exiting..")
+        pass
