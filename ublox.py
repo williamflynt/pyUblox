@@ -9,11 +9,11 @@ Released under GNU GPL version 3 or later
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from builtins import bytes
-
 import struct
+import time
+import os
+from builtins import bytes
 from datetime import datetime
-import time, os
 
 # protocol constants
 PREAMBLE1 = 0xb5
@@ -328,6 +328,7 @@ class UBloxDescriptor:
                 ret += '%s=%s, ' % (f, v)
             ret = ret[:-2] + ' ], '
         return ret[:-2]
+
 
 # list of supported message types.
 msg_types = {
