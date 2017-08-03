@@ -542,10 +542,18 @@ class UBloxMessage:
         '''return True if a message contains the given field'''
         return name in self._fields
 
+    @property
+    def fields(self):
+        return self._fields
+
     def debug(self, level, msg):
         '''write a debug message'''
         if self.debug_level >= level:
             print(msg)
+
+    @property
+    def unpacked(self):
+      return self._unpacked
 
     def unpack(self):
         '''unpack a message'''
