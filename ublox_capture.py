@@ -55,20 +55,9 @@ dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 
 dev.configure_message_rate(ublox.CLASS_MON, ublox.MSG_MON_HW, 1)
 
-import bitarray
-
 if __name__ == '__main__':
     try:
-        while True:
-            msg = dev.receive_message()
-            if msg is None:
-                if opts.reopen:
-                    dev.close()
-                    dev = ublox.UBlox(opts.port, baudrate=opts.baudrate, timeout=2)
-                    dev.set_logfile(opts.log, append=True)
-                    sys.stdout.write('R')
-                    continue
-                break
+        for msg in dev.stream():
             if opts.show:
                 if msg.msg_type() == (ublox.CLASS_MON, ublox.MSG_MON_HW):
                     if not msg.valid():
@@ -77,16 +66,41 @@ if __name__ == '__main__':
 
                     if not msg.unpacked:
                         msg.unpack()
-                    #  print("Name = {}".format(msg.name()))
-                    #  print(" Fields = {}".format(msg.fields))
+                    print("Name = {}".format(msg.name()))
+                    print(" Fields = {}".format(msg.fields))
                     fields = msg.fields
                     jam_ind = fields.get('jamInd')
                     print("jamInd = {}".format(jam_ind))
 
                     sys.stdout.flush()
-            elif opts.dots:
-                sys.stdout.write('.')
-                sys.stdout.flush()
+        # while True:
+        #     msg = dev.receive_message()
+        #     if msg is None:
+        #         if opts.reopen:
+        #             dev.close()
+        #             dev = ublox.UBlox(opts.port, baudrate=opts.baudrate, timeout=2)
+        #             dev.set_logfile(opts.log, append=True)
+        #             sys.stdout.write('R')
+        #             continue
+        #         break
+        #     if opts.show:
+        #         if msg.msg_type() == (ublox.CLASS_MON, ublox.MSG_MON_HW):
+        #             if not msg.valid():
+        #                 print("Invalid message..")
+        #                 continue
+
+        #             if not msg.unpacked:
+        #                 msg.unpack()
+        #             print("Name = {}".format(msg.name()))
+        #             print(" Fields = {}".format(msg.fields))
+        #             fields = msg.fields
+        #             jam_ind = fields.get('jamInd')
+        #             print("jamInd = {}".format(jam_ind))
+
+        #             sys.stdout.flush()
+        #     elif opts.dots:
+        #         sys.stdout.write('.')
+        #         sys.stdout.flush()
     except KeyboardInterrupt:
         print("Exiting..")
         pass
