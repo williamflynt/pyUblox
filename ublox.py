@@ -573,6 +573,7 @@ class UBloxMessage:
             raise UBloxError('Unknown message %s' % str(type))
         msg_types[type].pack(self)
 
+    @property
     def name(self):
         '''return the short string name for a message'''
         if not self.valid():
@@ -638,7 +639,7 @@ class UBloxMessage:
     def valid_checksum(self):
         '''check if the checksum is OK'''
         (ck_a, ck_b) = self.checksum()
-        d = self._buf[2:-2]
+        # d = self._buf[2:-2]
         (ck_a2, ck_b2) = struct.unpack('<BB', self._buf[-2:])
         return ck_a == ck_a2 and ck_b == ck_b2
 
@@ -720,7 +721,7 @@ class UBlox:
 
         if self.logfile:
             mode = 'ab' if append else 'wb'
-        self.log = open(self.logfile, mode=mode)
+            self.log = open(self.logfile, mode=mode)
 
     def set_preferred_dynamic_model(self, model):
         '''set the preferred dynamic model for receiver'''
