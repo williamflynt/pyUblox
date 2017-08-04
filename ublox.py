@@ -680,8 +680,17 @@ class UBlox:
             self.dev = open(self.serial_device, mode='rb')
         else:
             import serial
-            self.dev = serial.Serial(self.serial_device, baudrate=self.baudrate,
-                                     dsrdtr=False, rtscts=False, xonxoff=False, timeout=timeout)
+            try:
+                self.dev = serial.Serial(self.serial_device,
+                                         baudrate=self.baudrate,
+                                         dsrdtr=False,
+                                         rtscts=False,
+                                         xonxoff=False,
+                                         timeout=timeout)
+            except serial.serialutil.SerialException:
+                print("Unable to connect to {}".format(self.serial_device))
+                import sys
+                sys.exit(1)
         self.logfile = None
         self.log = None
         self.preferred_dynamic_model = None
@@ -814,20 +823,24 @@ class UBlox:
         '''blocking receive of one ublox message'''
         msg = UBloxMessage()
         while True:
-            n = msg.needed_bytes()
-            b = self.read(n)
-            if not b:
-                if ignore_eof:
-                    time.sleep(0.01)
-                    continue
+            try:
+                n = msg.needed_bytes()
+                b = self.read(n)
+                if not b:
+                    if ignore_eof:
+                        time.sleep(0.01)
+                        continue
+                    return None
+                msg.add(b)
+                if self.log is not None:
+                    self.log.write(b)
+                    self.log.flush()
+                if msg.valid():
+                    self.special_handling(msg)
+                    return msg
+            except OSError as oerr:
+                print("ERROR: {}".format(oerr))
                 return None
-            msg.add(b)
-            if self.log is not None:
-                self.log.write(b)
-                self.log.flush()
-            if msg.valid():
-                self.special_handling(msg)
-                return msg
 
     def receive_message_noerror(self, ignore_eof=False):
         '''blocking receive of one ublox message, ignoring errors'''
