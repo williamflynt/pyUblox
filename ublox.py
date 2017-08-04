@@ -819,6 +819,15 @@ class UBlox:
                 self.send(msg)
                 self.configure_poll(CLASS_CFG, MSG_CFG_NAVX5)
 
+    def stream(self, ignore_eof=False):
+        '''A generator which yields UBloxMessages() whenever they are ready'''
+
+        while True:
+            msg = self.receive_message(ignore_eof)
+            if not msg:
+                raise StopIteration("No more messages..")
+            yield msg
+
     def receive_message(self, ignore_eof=False):
         '''blocking receive of one ublox message'''
         msg = UBloxMessage()
