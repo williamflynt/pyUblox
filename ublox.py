@@ -573,7 +573,6 @@ class UBloxMessage:
             raise UBloxError('Unknown message %s' % str(type))
         msg_types[type].pack(self)
 
-    @property
     def name(self):
         '''return the short string name for a message'''
         if not self.valid():
