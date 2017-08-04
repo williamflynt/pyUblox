@@ -698,9 +698,9 @@ class UBlox:
         self.preferred_dgps_timeout = None
 
     def close(self):
-      '''close the device'''
-      self.dev.close()
-      self.dev = None
+        '''close the device'''
+        self.dev.close()
+        self.dev = None
 
     def set_debug(self, debug_level):
         '''set debug level'''
@@ -712,17 +712,15 @@ class UBlox:
             print(msg)
 
     def set_logfile(self, logfile, append=False):
-      '''setup logging to a file'''
-      if self.log is not None:
-          self.log.close()
-          self.log = None
-      self.logfile = logfile
-      if self.logfile is not None:
-          if append:
-              mode = 'ab'
-          else:
-              mode = 'wb'
-          self.log = open(self.logfile, mode=mode)
+        '''setup logging to a file'''
+        if self.log is not None:
+            self.log.close()
+            self.log = None
+        self.logfile = logfile
+
+        if self.logfile:
+            mode = 'ab' if append else 'wb'
+        self.log = open(self.logfile, mode=mode)
 
     def set_preferred_dynamic_model(self, model):
         '''set the preferred dynamic model for receiver'''
@@ -764,7 +762,7 @@ class UBlox:
             import socket
             try:
                 return self.dev.recv(n)
-            except socket.error as e:
+            except socket.error:
                 return ''
         return self.dev.read(n)
 
@@ -774,21 +772,21 @@ class UBlox:
             self.write(s.encode())
 
     def set_binary(self):
-      '''put a UBlox into binary mode using a NMEA string'''
-      if not self.read_only:
-          print("try set binary at %u" % self.baudrate)
-          self.send_nmea("$PUBX,41,0,0007,0001,%u,0" % self.baudrate)
-          self.send_nmea("$PUBX,41,1,0007,0001,%u,0" % self.baudrate)
-          self.send_nmea("$PUBX,41,2,0007,0001,%u,0" % self.baudrate)
-          self.send_nmea("$PUBX,41,3,0007,0001,%u,0" % self.baudrate)
-          self.send_nmea("$PUBX,41,4,0007,0001,%u,0" % self.baudrate)
-          self.send_nmea("$PUBX,41,5,0007,0001,%u,0" % self.baudrate)
+        '''put a UBlox into binary mode using a NMEA string'''
+        if not self.read_only:
+            print("try set binary at %u" % self.baudrate)
+            self.send_nmea("$PUBX,41,0,0007,0001,%u,0" % self.baudrate)
+            self.send_nmea("$PUBX,41,1,0007,0001,%u,0" % self.baudrate)
+            self.send_nmea("$PUBX,41,2,0007,0001,%u,0" % self.baudrate)
+            self.send_nmea("$PUBX,41,3,0007,0001,%u,0" % self.baudrate)
+            self.send_nmea("$PUBX,41,4,0007,0001,%u,0" % self.baudrate)
+            self.send_nmea("$PUBX,41,5,0007,0001,%u,0" % self.baudrate)
 
     def seek_percent(self, pct):
-      '''seek to the given percentage of a file'''
-      self.dev.seek(0, 2)
-      filesize = self.dev.tell()
-      self.dev.seek(pct*0.01*filesize)
+        '''seek to the given percentage of a file'''
+        self.dev.seek(0, 2)
+        filesize = self.dev.tell()
+        self.dev.seek(pct * 0.01 * filesize)
 
     def special_handling(self, msg):
         '''handle automatic configuration changes'''
