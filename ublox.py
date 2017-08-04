@@ -673,7 +673,7 @@ class UBlox:
             self.dev = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.dev.connect(destination_addr)
             self.dev.setblocking(1)
-            self.dev.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)            
+            self.dev.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
             self.use_sendrecv = True
         elif os.path.isfile(self.serial_device):
             self.read_only = True
