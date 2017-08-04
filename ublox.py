@@ -12,7 +12,6 @@ from __future__ import unicode_literals
 import struct
 import time
 import os
-from builtins import bytes
 from datetime import datetime
 
 # protocol constants
