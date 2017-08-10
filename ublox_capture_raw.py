@@ -46,6 +46,19 @@ dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
 dev.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_RAW, 1)
 dev.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SFRB, 1)
 
+#Added from ublox_capture.py
+dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_STATUS, 1)
+dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SOL, 1)
+dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELNED, 1)
+dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SVINFO, 1)
+dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELECEF, 1)
+
+dev.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SVSI, 1)
+dev.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_ALM, 1)
+dev.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_EPH, 1)
+dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
+dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
+
 # which SV IDs we have seen
 svid_seen = {}
 svid_ephemeris = {}
