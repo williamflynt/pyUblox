@@ -124,32 +124,32 @@ class PosVector:
         import math
         if isinstance(pos2, PosLLH):
             pos2 = pos2.ToECEF()
-    llh1 = self.ToLLH()
-    llh2 = pos2.ToLLH()
-    alt = (llh1.alt + llh2.alt)*0.5
-    llh1.alt = alt
-    llh2.alt = alt
-    return llh1.distance(llh2)
+            llh1 = self.ToLLH()
+            llh2 = pos2.ToLLH()
+            alt = (llh1.alt + llh2.alt)*0.5
+            llh1.alt = alt
+            llh2.alt = alt
+        return llh1.distance(llh2)
 
     def bearing(self, pos):
-    '''return bearing between two points in degrees, in range 0-360
-    thanks to http://www.movable-type.co.uk/scripts/latlong.html'''
-    from math import sin, cos, atan2, radians, degrees
-    llh1 = self.ToLLH()
-    llh2 = pos.ToLLH()
+        '''return bearing between two points in degrees, in range 0-360
+        thanks to http://www.movable-type.co.uk/scripts/latlong.html'''
+        from math import sin, cos, atan2, radians, degrees
+            llh1 = self.ToLLH()
+            llh2 = pos.ToLLH()
 
-    lat1 = radians(llh1.lat)
-    lat2 = radians(llh2.lat)
-    lon1 = radians(llh1.lon)
-    lon2 = radians(llh2.lon)
-    dLat = lat2 - lat1
-    dLon = lon2 - lon1
-    y = sin(dLon) * cos(lat2)
-    x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(dLon)
-    bearing = degrees(atan2(y, x))
-    if bearing < 0:
-        bearing += 360.0
-    return bearing
+            lat1 = radians(llh1.lat)
+            lat2 = radians(llh2.lat)
+            lon1 = radians(llh1.lon)
+            lon2 = radians(llh2.lon)
+            dLat = lat2 - lat1
+            dLon = lon2 - lon1
+            y = sin(dLon) * cos(lat2)
+            x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(dLon)
+            bearing = degrees(atan2(y, x))
+            if bearing < 0:
+                bearing += 360.0
+            return bearing
 
     def offsetXY(self, pos):
         '''
