@@ -91,8 +91,8 @@ class PosVector:
         self.X = float(X)
         self.Y = float(Y)
         self.Z = float(Z)
-    # allow for some extra information to be carried in the vector
-    self.extra = extra
+        # allow for some extra information to be carried in the vector
+        self.extra = extra
 
     def __str__(self):
         return '(%.8f, %.8f, %.8f)' % (self.X, self.Y, self.Z)
