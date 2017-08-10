@@ -58,20 +58,20 @@ class PosLLH:
         http://www.nicolargo.com/dev/xyz2lla/
         '''
         from math import sqrt, pow, sin, cos
-    a = 6378137.0
-    e = 8.1819190842622e-2
-    pi = gpsPi
+        a = 6378137.0
+        e = 8.1819190842622e-2
+        pi = gpsPi
 
-    lat = self.lat*(pi/180.0)
-    lon = self.lon*(pi/180.0)
-    alt = self.alt
+        lat = self.lat*(pi/180.0)
+        lon = self.lon*(pi/180.0)
+        alt = self.alt
 
-    n = a/sqrt((1.0-pow(e,2)*pow(sin(lat),2)))
-    x= (n+alt)*cos(lat)*cos(lon)
-    y= (n+alt)*cos(lat)*sin(lon)
-    z= (n*(1-pow(e,2))+alt)*sin(lat)
+        n = a/sqrt((1.0-pow(e,2)*pow(sin(lat),2)))
+        x= (n+alt)*cos(lat)*cos(lon)
+        y= (n+alt)*cos(lat)*sin(lon)
+        z= (n*(1-pow(e,2))+alt)*sin(lat)
 
-    return PosVector(x, y, z)
+        return PosVector(x, y, z)
 
     def distance(self, pos):
         '''return distance to another position'''
@@ -152,34 +152,34 @@ class PosVector:
 
     def offsetXY(self, pos):
         '''
-    return offset X,Y in meters to pos
-    '''
-    from math import sin, cos, radians
-    distance = self.distanceXY(pos)
-    bearing = self.bearing(pos)
-    x = distance * sin(radians(bearing))
-    y = distance * cos(radians(bearing))
-    return (x,y)
+        return offset X,Y in meters to pos
+        '''
+        from math import sin, cos, radians
+        distance = self.distanceXY(pos)
+        bearing = self.bearing(pos)
+        x = distance * sin(radians(bearing))
+        y = distance * cos(radians(bearing))
+        return (x,y)
 
     def SagnacCorrection(self, pos2):
         '''return the Sagnac range correction. Based
            on on RTCM2.3 appendix C. Note that this is not a symmetric error!
-       The pos2 position should be the satellite
+           The pos2 position should be the satellite
         '''
-    OMGE = 7.2921151467e-5     # earth angular velocity (IS-GPS) (rad/s)
-    return OMGE*(pos2.X * self.Y - pos2.Y * self.X) / speedOfLight
+        OMGE = 7.2921151467e-5     # earth angular velocity (IS-GPS) (rad/s)
+        return OMGE*(pos2.X * self.Y - pos2.Y * self.X) / speedOfLight
 
     def distanceSagnac(self, pos2):
         '''return distance taking into account Sagnac effect. Based
            on geodist() in rtklib. Note that this is not a symmetric distance!
-       The pos2 position should be the satellite
+           The pos2 position should be the satellite
 
-       Note that the Sagnac distance is an alternative to rotating
-       the satellite positions using
-       rangeCorrection.correctPosition(). Only one of them should
-       be used
+           Note that the Sagnac distance is an alternative to rotating
+           the satellite positions using
+           rangeCorrection.correctPosition(). Only one of them should
+           be used
         '''
-    return self.distance(pos2) + self.SagnacCorrection(pos2)
+        return self.distance(pos2) + self.SagnacCorrection(pos2)
 
     def ToLLH(self):
         '''convert from ECEF to lat/lon/alt
@@ -241,8 +241,8 @@ def loadObject(filename):
     import pickle
     try:
         h = open(filename, mode='rb')
-    obj = pickle.load(h)
-    h.close()
-    return obj
+        obj = pickle.load(h)
+        h.close()
+        return obj
     except Exception as e:
         return None
