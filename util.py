@@ -146,20 +146,20 @@ class PosVector:
         dLon = lon2 - lon1
         y = sin(dLon) * cos(lat2)
         x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(dLon)
-            if bearing < 0:
-                bearing += 360.0
-            return bearing
+        if bearing < 0:
+            bearing += 360.0
+        return bearing
 
     def offsetXY(self, pos):
         '''
     return offset X,Y in meters to pos
     '''
     from math import sin, cos, radians
-        distance = self.distanceXY(pos)
-        bearing = self.bearing(pos)
-        x = distance * sin(radians(bearing))
-        y = distance * cos(radians(bearing))
-        return (x,y)
+    distance = self.distanceXY(pos)
+    bearing = self.bearing(pos)
+    x = distance * sin(radians(bearing))
+    y = distance * cos(radians(bearing))
+    return (x,y)
 
     def SagnacCorrection(self, pos2):
         '''return the Sagnac range correction. Based
