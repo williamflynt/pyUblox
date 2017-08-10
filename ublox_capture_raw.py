@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-import ublox, sys, time, struct
+import sys
+import time
+import struct
+import ublox
 import ephemeris
 
 from optparse import OptionParser
