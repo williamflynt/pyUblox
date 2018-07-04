@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 
-import sys
-import numpy, math
-import scipy.sparse
-import pylab as plt
-
 from optparse import OptionParser
 
-from . import util, ublox
+import numpy
+import pylab as plt
 
 parser = OptionParser("satlog_plot.py [options]")
 parser.add_option("--avg", help="Average samples, comma-separated list for multiple satlogs")
