@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 import sys
-import time
-import struct
-import ublox
-import ephemeris
-
 from optparse import OptionParser
+
+from . import ublox
 
 parser = OptionParser("ublox_capture.py [options]")
 parser.add_option("--port", help="serial port", default='/dev/ttyACM0')
@@ -55,7 +52,7 @@ dev.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_ALM, 1)
 dev.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_EPH, 1)
 dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_TIMEGPS, 5)
 dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
-#dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 5)
+# dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_DGPS, 5)
 
 dev.configure_message_rate(ublox.CLASS_MON, ublox.MSG_MON_HW, 1)
 

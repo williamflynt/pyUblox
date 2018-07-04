@@ -3,8 +3,8 @@
 import sys
 import time
 import struct
-import ublox
-import ephemeris
+
+from . import ublox, ephemeris
 
 from optparse import OptionParser
 
@@ -19,7 +19,6 @@ parser.add_option("--show", action='store_true', default=False, help='show messa
 parser.add_option("--dynModel", type='int', default=None, help='set dynamic navigation model')
 parser.add_option("--usePPP", action='store_true', default=False, help='enable precise point positioning')
 parser.add_option("--dots", action='store_true', default=False, help='print a dot on each message')
-
 
 (opts, args) = parser.parse_args()
 
@@ -46,7 +45,7 @@ dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
 dev.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_RAW, 1)
 dev.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SFRB, 1)
 
-#Added from ublox_capture.py
+# Added from ublox_capture.py
 dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_STATUS, 1)
 dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SOL, 1)
 dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_VELNED, 1)
@@ -63,18 +62,20 @@ dev.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_CLOCK, 5)
 svid_seen = {}
 svid_ephemeris = {}
 
+
 def handle_rxm_raw(msg):
-    '''handle a RXM_RAW message'''
+    """handle a RXM_RAW message"""
     global svid_seen, svid_ephemeris
 
     for i in range(msg.numSV):
         sv = msg.recs[i].sv
         tnow = time.time()
-        if not sv in svid_seen or tnow > svid_seen[sv]+30:
-            if sv in svid_ephemeris and svid_ephemeris[sv].timereceived+1800 < tnow:
+        if sv not in svid_seen or tnow > svid_seen[sv] + 30:
+            if sv in svid_ephemeris and svid_ephemeris[sv].timereceived + 1800 < tnow:
                 continue
             dev.configure_poll(ublox.CLASS_AID, ublox.MSG_AID_EPH, struct.pack('<B', sv))
             svid_seen[sv] = tnow
+
 
 while True:
     msg = dev.receive_message()
