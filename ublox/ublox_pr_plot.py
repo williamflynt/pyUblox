@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
-import ublox, sys, fnmatch, os, time
-import util, satelliteData, positionEstimate
-import numpy
-
-from mpl_toolkits.axes_grid1 import host_subplot
-import mpl_toolkits.axisartist as AA
-import matplotlib.pyplot as plt
-
 from optparse import OptionParser
+
+import matplotlib.pyplot as plt
+import mpl_toolkits.axisartist as AA
+import numpy
+from mpl_toolkits.axes_grid1 import host_subplot
+
+from . import ublox, util, satelliteData, positionEstimate
 
 parser = OptionParser("ublox_pr_plot.py [options] <file>")
 parser.add_option("--seek", type='float', default=0, help="seek percentage to start in log")
@@ -23,9 +22,10 @@ if opts.reference:
 
 dev = ublox.UBlox(args[0])
 
-if opts.seek != 0:
-    for d in devs:
-        d.seek_percent(opts.seek)
+# # # This code references devs variable - not defined.
+# if opts.seek != 0:
+#     for d in devs:
+#         d.seek_percent(opts.seek)
 
 sat = opts.sats
 
@@ -133,5 +133,5 @@ host.legend()
 plt.draw()
 plt.show()
 
-raw_input('Press enter')
+input('Press enter')
 
