@@ -1,12 +1,26 @@
 # pyUblox
 
-This Python module is a collection of various pieces of codes to read and communicate with uBlox devices
+This Python module is a collection of various pieces of codes to read and communicate with uBlox devices.
+It may or may not work. The code itself is a bit of a Frankenstein and there's no documentation. Good luck!
 
 
 ## Requirements
 
 1. Python 3
 2. uBlox device properly connected
+
+In addition, see the requirements.txt file.
+
+Of note, pybayes is a Python2 package ported automatically to Python3. It may not work.
+
+
+## Installation
+
+You can use pip to install this package by referencing this repo.
+~~~
+# Looks like: pip install git+<<myrepo.git>>
+pip install git+https://github.com/williamflynt/pyUblox.git
+~~~
 
 
 ## Test the device
