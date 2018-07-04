@@ -9,7 +9,9 @@ Released under GNU GPL version 3 or later
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import serial
 import struct
+import sys
 import time
 import os
 
@@ -691,7 +693,6 @@ class UBlox:
             self.read_only = True
             self.dev = open(self.serial_device, mode='rb')
         else:
-            import serial
             try:
                 self.dev = serial.Serial(self.serial_device,
                                          baudrate=self.baudrate,
@@ -701,7 +702,6 @@ class UBlox:
                                          timeout=timeout)
             except serial.serialutil.SerialException:
                 print("Unable to connect to {}".format(self.serial_device))
-                import sys
                 sys.exit(1)
         self.logfile = None
         self.log = None
