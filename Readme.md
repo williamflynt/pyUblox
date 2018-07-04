@@ -8,8 +8,7 @@ It may or may not work. The code itself is a bit of a Frankenstein and there's n
 
 1. Python 3
 2. uBlox device properly connected
-
-In addition, see the requirements.txt file.
+3. Other stuff that's contained in `setup.py`
 
 Of note, pybayes is a Python2 package ported automatically to Python3. It may not work.
 
