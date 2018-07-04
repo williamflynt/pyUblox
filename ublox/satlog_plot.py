@@ -7,7 +7,7 @@ import pylab as plt
 
 from optparse import OptionParser
 
-import util, ublox
+from . import util, ublox
 
 parser = OptionParser("satlog_plot.py [options]")
 parser.add_option("--avg", help="Average samples, comma-separated list for multiple satlogs")
@@ -29,12 +29,14 @@ else:
 
 satlogs = []
 
+
 def moving_average(a, n):
     if n == 1:
         return a
 
     r = numpy.cumsum(a, dtype=float)
-    return ((r[n-1:] - r[:1-n]) / n).tolist()
+    return ((r[n - 1:] - r[:1 - n]) / n).tolist()
+
 
 def trimmed_average(a, n):
     out = []
@@ -42,11 +44,12 @@ def trimmed_average(a, n):
         return a
 
     for i in range(len(a) - n):
-        window = a[i:i+n]
+        window = a[i:i + n]
         t = sorted(window)[n // 4: 3 * n // 4]
         out.append(sum(t) / len(t))
 
     return out
+
 
 for log, avg in zip(args, avgs):
     l = []
@@ -54,38 +57,37 @@ for log, avg in zip(args, avgs):
         for line in f:
             # Some bug means that huge ranges sometimes get through and stuff the scales.
             # While we search for the bug itself, at least we can stop is messing with the plots
-            meas = [ float(m) if abs(float(m)) < 200 else 0
-                for m in line.strip().split(',')[1:]] # Cut off the leading timestamp
+            meas = [float(m) if abs(float(m)) < 200 else 0
+                    for m in line.strip().split(',')[1:]]  # Cut off the leading timestamp
             l.append(meas)
 
     satlogs.append(l)
 
 for log in satlogs:
-    for i in range(1,len(log)-1):
+    for i in range(1, len(log) - 1):
         for j in range(len(log[i])):
-            if log[i][j] == 0 and log[i-1][j] != 0:
-                log[i][j] = log[i-1][j]
+            if log[i][j] == 0 and log[i - 1][j] != 0:
+                log[i][j] = log[i - 1][j]
 
 for sat in range(30):
     sat_dat = []
-    #print('---' + str(sat) + '---')
+    # print('---' + str(sat) + '---')
     for log, avg, scale in zip(satlogs, avgs, scales):
         ranges = []
-        for r in [ ep[sat] for ep in log ]:
+        for r in [ep[sat] for ep in log]:
             ranges += [r] * scale
 
-
-        #ranges = moving_average(ranges, avg)
+        # ranges = moving_average(ranges, avg)
         ranges = trimmed_average(ranges, avg)
         ranges = [0] * (avg // 2) + ranges + [0] * (avg // 2)
 
         # if any sat has one log with only empty ranges, move to the next sat
-        #if not any(ranges):
+        # if not any(ranges):
         #    break
 
         sat_dat.append(ranges)
 
-        #print(numpy.average(ranges), numpy.std(ranges))
+        # print(numpy.average(ranges), numpy.std(ranges))
     else:
         ax = plt.subplot(5, 6, sat)
         for log in sat_dat:

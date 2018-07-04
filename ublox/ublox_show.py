@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import ublox, sys, fnmatch, os
+import sys, fnmatch, os
+
+from . import ublox
 
 from optparse import OptionParser
 
@@ -37,6 +39,5 @@ while True:
     try:
         print(str(msg))
     except ublox.UBloxError as e:
-        print e.message
+        print(e.message)
     sys.stdout.flush()
-
