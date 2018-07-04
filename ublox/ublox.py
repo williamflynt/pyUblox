@@ -47,10 +47,10 @@ MSG_NAV_CLOCK = 0x22
 MSG_NAV_SVINFO = 0x30
 MSG_NAV_AOPSTATUS = 0x60
 MSG_NAV_DGPS = 0x31
-MSG_NAV_DOP = 0x04
+# MSG_NAV_DOP = 0x04  # Defined above
 MSG_NAV_EKFSTATUS = 0x40
 MSG_NAV_SBAS = 0x32
-MSG_NAV_SOL = 0x06
+# MSG_NAV_SOL = 0x06  # Defined above
 
 # RXM messages
 MSG_RXM_RAW = 0x10
@@ -67,7 +67,6 @@ MSG_AID_ALPSRV = 0x32
 MSG_AID_AOP = 0x33
 MSG_AID_DATA = 0x10
 MSG_AID_ALP = 0x50
-MSG_AID_DATA = 0x10
 MSG_AID_HUI = 0x02
 MSG_AID_INI = 0x01
 MSG_AID_REQ = 0x00
@@ -201,7 +200,10 @@ def ArrayParse(field):
 class UBloxDescriptor:
     """class used to describe the layout of a UBlox message"""
 
-    def __init__(self, name, msg_format, fields=[], count_field=None, format2=None, fields2=None):
+    def __init__(self, name, msg_format, fields=None, count_field=None, format2=None, fields2=None):
+        if fields is None:
+            fields = []
+
         self.name = name
         self.msg_format = msg_format
         self.fields = fields
@@ -302,8 +304,8 @@ class UBloxDescriptor:
 
             for r in msg._recs:
                 f2 = []
-                for f in self.fields2:
-                    f2.append(r[f])
+                for f2_field in self.fields2:
+                    f2.append(r[f2_field])
                 msg._buf += struct.pack(self.format2, *tuple(f2))
             msg._buf += struct.pack('<BB', *msg.checksum(data=msg._buf[2:]))
 
@@ -810,7 +812,7 @@ class UBlox:
                 pollit = True
             if self.preferred_dgps_timeout is not None and msg.dgpsTimeOut != self.preferred_dgps_timeout:
                 msg.dgpsTimeOut = self.preferred_dgps_timeout
-                self.debug(2, "Setting dgpsTimeOut=%u" % msg.dgpsTimeOut)
+                self.debug(2, "Setting dgpsTimeOut=%u" % msg.dgpsTimeOut)  # We explicitly check for not None
                 sendit = True
                 # we don't re-poll for this one, as some receivers refuse to set it
             if sendit:
