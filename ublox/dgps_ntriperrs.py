@@ -1,14 +1,13 @@
 #!/usr/bin/env python
-'''
+"""
 two receiver DGPS test code
-'''
+"""
 
-import ublox, sys, time, struct
-import ephemeris, util
-import RTCMv3_decode
-import nmea_wrapper
-
+import sys
+import time
 from optparse import OptionParser
+
+from . import ublox, util, RTCMv3_decode, nmea_wrapper
 
 parser = OptionParser("dgps_test.py [options]")
 parser.add_option("--port2", help="serial port 2", default='/dev/ttyACM1')
@@ -42,6 +41,7 @@ elif opts.ecef_reference is not None:
 else:
     reference_position = None
 
+
 def setup_port(port, log, append=False):
     dev = ublox.UBlox(port, baudrate=opts.baudrate, timeout=0.01)
     dev.set_logfile(log, append=append)
@@ -60,6 +60,7 @@ def setup_port(port, log, append=False):
     dev.configure_poll_port(ublox.PORT_SERIAL2)
     dev.configure_poll_port(ublox.PORT_USB)
     return dev
+
 
 if opts.nmea_2:
     dev2 = nmea_wrapper.NMEAModule(opts.port2, opts.baudrate)
@@ -109,7 +110,6 @@ if opts.module_reset:
     else:
         dev3 = None
 
-
 if not opts.nmea_2:
     dev2.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSLLH, 1)
     dev2.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
@@ -143,22 +143,24 @@ if dev3 is not None and not opts.nmea_3:
 errlog = open(time.strftime('errlog-%y%m%d-%H%M.txt'), mode='w')
 errlog.write("normal DGPS normal-XY DGPS-XY\n")
 
+
 def display_diff(name, pos1, pos2):
     print("%13s err: %6.2f errXY: %6.2f pos=%s" % (name, pos1.distance(pos2), pos1.distanceXY(pos2), pos1.ToLLH()))
 
+
 def handle_device2(msg):
     global rx2_pos
-    '''handle message from rover GPS'''
+    """handle message from rover GPS"""
     if msg.name() == 'NAV_DGPS':
         msg.unpack()
         print("DGPS: age=%u numCh=%u" % (msg.age, msg.numCh))
     if msg.name() == "NAV_POSECEF":
         msg.unpack()
-        rx2_pos = util.PosVector(msg.ecefX*0.01, msg.ecefY*0.01, msg.ecefZ*0.01)
+        rx2_pos = util.PosVector(msg.ecefX * 0.01, msg.ecefY * 0.01, msg.ecefZ * 0.01)
 
         print("-----------------")
         display_diff("REF<->RECV2", rx2_pos, reference_position)
-        
+
         if dev3 is not None and rx3_pos is not None:
             display_diff("REF<->RECV3", reference_position, rx3_pos)
             errlog.write("%f %f %f %f\n" % (
@@ -168,19 +170,23 @@ def handle_device2(msg):
                 reference_position.distanceXY(rx2_pos)))
             errlog.flush()
 
+
 def handle_device3(msg):
     global rx3_pos
-    '''handle message from uncorrected rover GPS'''
+    """handle message from uncorrected rover GPS"""
     if msg.name() == "NAV_POSECEF":
         msg.unpack()
-        pos = util.PosVector(msg.ecefX*0.01, msg.ecefY*0.01, msg.ecefZ*0.01)
+        pos = util.PosVector(msg.ecefX * 0.01, msg.ecefY * 0.01, msg.ecefZ * 0.01)
         rx3_pos = pos
-                                            
+
+
 def send_rtcm(msg):
     print(msg)
     dev2.write(msg)
 
-RTCMv3_decode.run_RTCM_converter(opts.ntrip_server, opts.ntrip_port, opts.ntrip_user, opts.ntrip_password, opts.ntrip_mount, rtcm_callback=send_rtcm)
+
+RTCMv3_decode.run_RTCM_converter(opts.ntrip_server, opts.ntrip_port, opts.ntrip_user, opts.ntrip_password,
+                                 opts.ntrip_mount, rtcm_callback=send_rtcm)
 
 while True:
     # get a message from the reference GPS

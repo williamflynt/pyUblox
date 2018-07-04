@@ -1,13 +1,14 @@
 #!/usr/bin/env python
-'''
+"""
 two receiver DGPS test code
-'''
+"""
 
-import ublox, sys, time, struct
-import ephemeris, util, positionEstimate, satelliteData
-import RTCMv2
-
+import struct
+import sys
+import time
 from optparse import OptionParser
+
+from . import util, positionEstimate, satelliteData, ublox, RTCMv2
 
 parser = OptionParser("dgps_test.py [options]")
 parser.add_option("--port1", help="serial port 1", default='/dev/ttyACM0')
@@ -31,8 +32,8 @@ parser.add_option("--minquality", type='int', default=6, help="minimum satellite
 parser.add_option("--append", action='store_true', default=False, help='append to log file')
 parser.add_option("--module-reset", action='store_true', help="cold start all the modules")
 
-
 (opts, args) = parser.parse_args()
+
 
 def setup_port(port, log, append=False):
     dev = ublox.UBlox(port, baudrate=opts.baudrate, timeout=0.01)
@@ -53,6 +54,7 @@ def setup_port(port, log, append=False):
     dev.configure_poll_port(ublox.PORT_USB)
     return dev
 
+
 dev1 = setup_port(opts.port1, opts.log1, append=opts.append)
 dev2 = setup_port(opts.port2, opts.log2, append=opts.append)
 
@@ -60,7 +62,6 @@ if opts.port3 is not None:
     dev3 = setup_port(opts.port3, opts.log3, append=opts.append)
 else:
     dev3 = None
-
 
 if opts.module_reset:
     dev2.module_reset(ublox.RESET_COLD, ublox.RESET_HW)
@@ -83,7 +84,6 @@ if opts.module_reset:
     else:
         dev3 = None
 
-
 dev1.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSLLH, 1)
 dev1.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
 dev1.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_RAW, 1)
@@ -91,7 +91,6 @@ dev1.configure_message_rate(ublox.CLASS_RXM, ublox.MSG_RXM_SFRB, 1)
 dev1.configure_message_rate(ublox.CLASS_AID, ublox.MSG_AID_EPH, 1)
 dev1.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SVINFO, 1)
 dev1.configure_solution_rate(rate_ms=200)
-
 
 dev2.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSLLH, 1)
 dev2.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
@@ -134,21 +133,24 @@ else:
 
 logfile = time.strftime('satlog-local-%y%m%d-%H%M.txt')
 satlog = None
+
+
 def save_satlog(t, errset):
     global satlog
     if satlog is None:
         satlog = open(logfile, 'w')
 
-    eset = [ str(errset.get(s,'0')) for s in range(33) ]
+    eset = [str(errset.get(s, '0')) for s in range(33)]
 
     satlog.write(str(t) + "," + ",".join(eset) + "\n")
     satlog.flush()
 
-def position_estimate(messages, satinfo):
-    '''process raw messages to calculate position
-    '''
 
-    rxm_raw   = messages['RXM_RAW']
+def position_estimate(messages, satinfo):
+    """process raw messages to calculate position
+    """
+
+    rxm_raw = messages['RXM_RAW']
 
     pos = positionEstimate.positionEstimate(satinfo)
     if pos is None:
@@ -168,7 +170,7 @@ def position_estimate(messages, satinfo):
         rtcmfile.write(rtcm)
         if not opts.nortcm:
             dev2.write(rtcm)
-    
+
     errset = {}
     for svid in satinfo.rtcm_bits.error_history:
         errset[svid] = satinfo.rtcm_bits.error_history[svid][-1]
@@ -177,22 +179,25 @@ def position_estimate(messages, satinfo):
 
     return pos
 
+
 # which SV IDs we have seen
 svid_seen = {}
 svid_ephemeris = {}
 
+
 def handle_rxm_raw(msg):
-    '''handle a RXM_RAW message'''
+    """handle a RXM_RAW message"""
     global svid_seen, svid_ephemeris
 
     for i in range(msg.numSV):
         sv = msg.recs[i].sv
         tnow = time.time()
-        if not sv in svid_seen or tnow > svid_seen[sv]+30:
-            if sv in svid_ephemeris and svid_ephemeris[sv].timereceived+1800 < tnow:
+        if not sv in svid_seen or tnow > svid_seen[sv] + 30:
+            if sv in svid_ephemeris and svid_ephemeris[sv].timereceived + 1800 < tnow:
                 continue
             dev1.configure_poll(ublox.CLASS_AID, ublox.MSG_AID_EPH, struct.pack('<B', sv))
             svid_seen[sv] = tnow
+
 
 last_msg1_time = time.time()
 last_msg2_time = time.time()
@@ -208,15 +213,15 @@ elif opts.ecef_reference is not None:
 else:
     satinfo.reference_position = None
 
-
 satinfo.min_elevation = opts.minelevation
 satinfo.min_quality = opts.minquality
 
+
 def handle_device1(msg):
-    '''handle message from reference GPS'''
+    """handle message from reference GPS"""
     global messages, satinfo
-    
-    if msg.name() in [ 'RXM_RAW', 'NAV_POSECEF', 'RXM_SFRB', 'RXM_RAW', 'AID_EPH', 'NAV_POSECEF' ]:
+
+    if msg.name() in ['RXM_RAW', 'NAV_POSECEF', 'RXM_SFRB', 'RXM_RAW', 'AID_EPH', 'NAV_POSECEF']:
         try:
             msg.unpack()
             messages[msg.name()] = msg
@@ -227,40 +232,44 @@ def handle_device1(msg):
         handle_rxm_raw(msg)
         position_estimate(messages, satinfo)
 
+
 if opts.append:
     errlog = open(time.strftime('errlog-%y%m%d-%H%M.txt'), mode='a')
 else:
     errlog = open(time.strftime('errlog-%y%m%d-%H%M.txt'), mode='w')
     errlog.write("normal DGPS normal-XY DGPS-XY\n")
 
+
 def display_diff(name, pos1, pos2):
     print("%13s err: %6.2f errXY: %6.2f pos=%s" % (name, pos1.distance(pos2), pos1.distanceXY(pos2), pos1.ToLLH()))
 
+
 pos_count = 0
 
+
 def handle_device2(msg):
-    '''handle message from rover GPS'''
+    """handle message from rover GPS"""
     global pos_count
     if msg.name() == 'NAV_DGPS':
         msg.unpack()
         print("DGPS: age=%u numCh=%u pos_count=%u" % (msg.age, msg.numCh, pos_count))
     if msg.name() == "NAV_POSECEF":
         msg.unpack()
-        pos = util.PosVector(msg.ecefX*0.01, msg.ecefY*0.01, msg.ecefZ*0.01)
+        pos = util.PosVector(msg.ecefX * 0.01, msg.ecefY * 0.01, msg.ecefZ * 0.01)
         satinfo.recv2_position = pos
         if satinfo.average_position is None or satinfo.position_estimate is None:
             return
         print("-----------------")
         display_diff("RECV1<->RECV2", satinfo.receiver_position, pos)
-        display_diff("RECV2<->AVG",   satinfo.receiver_position, satinfo.average_position)
-        display_diff("AVG<->RECV1",   satinfo.average_position, satinfo.receiver_position)
-        display_diff("AVG<->RECV2",   satinfo.average_position, pos)
+        display_diff("RECV2<->AVG", satinfo.receiver_position, satinfo.average_position)
+        display_diff("AVG<->RECV1", satinfo.average_position, satinfo.receiver_position)
+        display_diff("AVG<->RECV2", satinfo.average_position, pos)
         if satinfo.reference_position is not None:
-            display_diff("REF<->AVG",   satinfo.reference_position, satinfo.average_position)
-            display_diff("POS<->REF",   satinfo.position_estimate, satinfo.reference_position)
+            display_diff("REF<->AVG", satinfo.reference_position, satinfo.average_position)
+            display_diff("POS<->REF", satinfo.position_estimate, satinfo.reference_position)
             if satinfo.rtcm_position is not None:
-                display_diff("RTCM<->REF", satinfo.rtcm_position, satinfo.reference_position)                
-                display_diff("RTCM<->RECV2", satinfo.rtcm_position, satinfo.recv2_position)                
+                display_diff("RTCM<->REF", satinfo.rtcm_position, satinfo.reference_position)
+                display_diff("RTCM<->RECV2", satinfo.rtcm_position, satinfo.recv2_position)
             display_diff("RECV1<->REF", satinfo.receiver_position, satinfo.reference_position)
             display_diff("RECV2<->REF", satinfo.recv2_position, satinfo.reference_position)
             pos_count += 1
@@ -280,13 +289,14 @@ def handle_device2(msg):
                     satinfo.reference_position.distanceXY(satinfo.recv2_position)))
                 errlog.flush()
 
+
 def handle_device3(msg):
-    '''handle message from uncorrected rover GPS'''
+    """handle message from uncorrected rover GPS"""
     if msg.name() == "NAV_POSECEF":
         msg.unpack()
-        pos = util.PosVector(msg.ecefX*0.01, msg.ecefY*0.01, msg.ecefZ*0.01)
+        pos = util.PosVector(msg.ecefX * 0.01, msg.ecefY * 0.01, msg.ecefZ * 0.01)
         satinfo.recv3_position = pos
-                                            
+
 
 while True:
     # get a message from the reference GPS

@@ -1,13 +1,14 @@
 #!/usr/bin/env python
-'''
+"""
 two receiver DGPS test code
-'''
+"""
 
-import ublox, sys, time, struct
-import ephemeris, util
-import RTCMv2
-
+import struct
+import sys
+import time
 from optparse import OptionParser
+
+from . import ublox, ephemeris, util, RTCMv2
 
 parser = OptionParser("dgps_test.py [options]")
 parser.add_option("--port1", help="serial port 1", default='/dev/ttyACM0')
@@ -28,6 +29,7 @@ parser.add_option("--module-reset", action='store_true', help="cold start all th
 
 (opts, args) = parser.parse_args()
 
+
 def setup_port(port, log, append=False):
     dev = ublox.UBlox(port, baudrate=opts.baudrate, timeout=0.01)
     dev.set_logfile(log, append=append)
@@ -46,6 +48,7 @@ def setup_port(port, log, append=False):
     dev.configure_poll_port(ublox.PORT_SERIAL2)
     dev.configure_poll_port(ublox.PORT_USB)
     return dev
+
 
 dev1 = setup_port(opts.port1, opts.log1)
 dev2 = setup_port(opts.port2, opts.log2)
@@ -79,12 +82,9 @@ if opts.module_reset:
     else:
         dev3 = None
 
-
-
 dev1.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SVINFO, 1)
 dev1.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_SOL, 1)
 dev1.configure_solution_rate(rate_ms=1000)
-
 
 dev2.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSLLH, 1)
 dev2.configure_message_rate(ublox.CLASS_NAV, ublox.MSG_NAV_POSECEF, 1)
@@ -126,22 +126,21 @@ rtcm_gen = RTCMv2.RTCMBits()
 
 itow = 0
 week = 0
-rx1_pos = util.PosVector(0,0,0)
-rx2_pos = util.PosVector(0,0,0)
-rx3_pos = util.PosVector(0,0,0)
+rx1_pos = util.PosVector(0, 0, 0)
+rx2_pos = util.PosVector(0, 0, 0)
+rx3_pos = util.PosVector(0, 0, 0)
 
 svid_seen = {}
 svid_iode = {}
 
 
 def svinfo_to_rtcm(svinfo):
-
     resid = {}
 
     for i in range(msg.numCh):
         sv = msg.recs[i].svid
         tnow = time.time()
-        if not sv in svid_seen or tnow > svid_seen[sv]+30:
+        if not sv in svid_seen or tnow > svid_seen[sv] + 30:
             dev1.configure_poll(ublox.CLASS_AID, ublox.MSG_AID_EPH, struct.pack('<B', sv))
             svid_seen[sv] = tnow
 
@@ -164,14 +163,15 @@ def svinfo_to_rtcm(svinfo):
         rtcmfile.write(rtcm)
         if not opts.nortcm:
             dev2.write(rtcm)
-    
+
 
 last_msg1_time = time.time()
 last_msg2_time = time.time()
 last_msg3_time = time.time()
 
+
 def handle_device1(msg):
-    '''handle message from reference GPS'''
+    """handle message from reference GPS"""
     global messages, satinfo, itow, week, rx1_pos, svid_seen
 
     if msg.name() in ['NAV_SVINFO', 'NAV_SOL', 'AID_EPH']:
@@ -191,24 +191,27 @@ def handle_device1(msg):
         if eph.valid:
             svid_iode[eph.svid] = eph.iode
 
+
 errlog = open('errlog.txt', mode='w')
 errlog.write("normal DGPS normal-XY DGPS-XY\n")
+
 
 def display_diff(name, pos1, pos2):
     print("%13s err: %6.2f errXY: %6.2f pos=%s" % (name, pos1.distance(pos2), pos1.distanceXY(pos2), pos1.ToLLH()))
 
+
 def handle_device2(msg):
-    '''handle message from rover GPS'''
+    """handle message from rover GPS"""
     if msg.name() == 'NAV_DGPS':
         msg.unpack()
         print("DGPS: age=%u numCh=%u" % (msg.age, msg.numCh))
     if msg.name() == "NAV_POSECEF":
         msg.unpack()
-        rx2_pos = util.PosVector(msg.ecefX*0.01, msg.ecefY*0.01, msg.ecefZ*0.01)
+        rx2_pos = util.PosVector(msg.ecefX * 0.01, msg.ecefY * 0.01, msg.ecefZ * 0.01)
 
         print("-----------------")
         display_diff("RECV1<->RECV2", rx1_pos, rx2_pos)
-        
+
         if dev3 is not None:
             display_diff("RECV1<->RECV3", rx1_pos, rx3_pos)
             errlog.write("%f %f %f %f\n" % (
@@ -218,14 +221,15 @@ def handle_device2(msg):
                 rx1_pos.distanceXY(rx2_pos)))
             errlog.flush()
 
+
 def handle_device3(msg):
     global rx3_pos
-    '''handle message from uncorrected rover GPS'''
+    """handle message from uncorrected rover GPS"""
     if msg.name() == "NAV_POSECEF":
         msg.unpack()
-        pos = util.PosVector(msg.ecefX*0.01, msg.ecefY*0.01, msg.ecefZ*0.01)
+        pos = util.PosVector(msg.ecefX * 0.01, msg.ecefY * 0.01, msg.ecefZ * 0.01)
         rx3_pos = pos
-                                            
+
 
 while True:
     # get a message from the reference GPS
