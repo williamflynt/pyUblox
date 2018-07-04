@@ -3,7 +3,9 @@
 test ublox parsing, packing and printing
 '''
 
-import ublox, sys, fnmatch, os
+import sys, fnmatch, os
+
+from . import ublox
 
 from optparse import OptionParser
 

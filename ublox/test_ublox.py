@@ -1,6 +1,6 @@
-import unittest
 from unittest import TestCase
-from unittest.mock import patch, Mock
+from unittest.mock import patch
+
 """
 Test code to mock out the need for the UBlox class to actually be connected ¨
 the the EVK 8N device.
