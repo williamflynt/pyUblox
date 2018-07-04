@@ -1,40 +1,45 @@
-'''
+"""
 Single point position estimate from raw receiver data
-'''
+"""
 
 import time
-import util, satPosition, rangeCorrection
+
+from scipy import optimize
+
+from . import util, satPosition, rangeCorrection
 
 logfile = time.strftime('satlog-klobuchar-%y%m%d-%H%M.txt')
 satlog = None
+
+
 def save_satlog(t, errset):
     global satlog
     if satlog is None:
         satlog = open(logfile, 'w')
 
-    eset = [ str(errset.get(s,'0')) for s in range(33) ]
+    eset = [str(errset.get(s, '0')) for s in range(33)]
 
     satlog.write(str(t) + "," + ",".join(eset) + "\n")
     satlog.flush()
 
+
 def positionErrorFunction(p, data):
-    '''error function for least squares position fit'''
+    """error function for least squares position fit"""
     pos = util.PosVector(p[0], p[1], p[2])
     recv_clockerr = p[3]
     ret = []
     for d in data:
         satpos, prange, weight = d
         dist = pos.distance(satpos)
-        ret.append((dist - (prange + util.speedOfLight*recv_clockerr))*weight)
+        ret.append((dist - (prange + util.speedOfLight * recv_clockerr)) * weight)
     return ret
 
+
 def positionLeastSquares_ranges(satinfo, pranges, lastpos, last_clock_error, weights=None):
-    '''estimate ECEF position of receiver via least squares fit to satellite positions and pseudo-ranges
+    """estimate ECEF position of receiver via least squares fit to satellite positions and pseudo-ranges
     The weights dictionary is optional. If supplied, it is the weighting from 0 to 1 for each satellite.
     A weight of 1 means it has more influence on the solution
-    '''
-    import scipy
-    from scipy import optimize
+    """
     data = []
 
     for svid in satinfo.satpos:
@@ -45,30 +50,31 @@ def positionLeastSquares_ranges(satinfo, pranges, lastpos, last_clock_error, wei
                 weight = 1.0
             data.append((satinfo.satpos[svid], pranges[svid], weight))
     p0 = [lastpos.X, lastpos.Y, lastpos.Z, last_clock_error]
-    p1, ier = optimize.leastsq(positionErrorFunction, p0[:], args=(data))
-    if not ier in [1, 2, 3, 4]:
+    p1, ier = optimize.leastsq(positionErrorFunction, p0[:], args=(data,))
+    if ier not in [1, 2, 3, 4]:
         raise RuntimeError("Unable to find solution")
 
     # return position and clock error
     return util.PosVector(p1[0], p1[1], p1[2], extra=p1[3])
 
+
 def clockErrorFunction(p, data):
-    '''error function for least squares position fit'''
+    """error function for least squares position fit"""
     pos = util.PosVector(*data[0])
     recv_clockerr = p[0]
     ret = []
     for d in data[1:]:
         satpos, prange, weight = d
         dist = pos.distance(satpos)
-        ret.append((dist - (prange + util.speedOfLight*recv_clockerr))*weight)
+        ret.append((dist - (prange + util.speedOfLight * recv_clockerr)) * weight)
     return ret
 
+
 def clockLeastSquares_ranges(eph, pranges, itow, ref_pos, last_clock_error, weights=None):
-    '''estimate ECEF position of receiver via least squares fit to satellite positions and pseudo-ranges
+    """estimate ECEF position of receiver via least squares fit to satellite positions and pseudo-ranges
     The weights dictionary is optional. If supplied, it is the weighting from 0 to 1 for each satellite.
     A weight of 1 means it has more influence on the solution
-    '''
-    import scipy
+    """
     from scipy import optimize
     data = [ref_pos]
 
@@ -94,20 +100,21 @@ def clockLeastSquares_ranges(eph, pranges, itow, ref_pos, last_clock_error, weig
 
     return p1[0]
 
+
 def satelliteWeightings(satinfo):
-    '''return a dictionary of weightings for the contribution to the least squares
-       for each satellite'''
+    """return a dictionary of weightings for the contribution to the least squares
+       for each satellite"""
     weights = {}
     for svid in satinfo.prSmoothed:
         # start with the quality estimate from the receiver
         quality = satinfo.raw.quality[svid]
-        weight = 1.0/(pow(8 - min(quality,7),2))
+        weight = 1.0 / (pow(8 - min(quality, 7), 2))
 
         # add in the elevation setting. Scale to 1.0 at twice the min_elevation, and drop linearly to
         # zero at zero elevation
-        max_el = 2*satinfo.min_elevation
+        max_el = 2 * satinfo.min_elevation
         elevation = max(min(satinfo.elevation[svid], max_el), 1)
-        weight *= 1.0 - ((max_el - elevation)/max_el)
+        weight *= 1.0 - ((max_el - elevation) / max_el)
 
         # add in the length of the cp smoothing history
         weight *= satinfo.smooth.weight(svid)
@@ -115,8 +122,9 @@ def satelliteWeightings(satinfo):
         weights[svid] = weight
     return weights
 
+
 def positionLeastSquares(satinfo):
-    '''estimate ECEF position of receiver via least squares fit to satellite positions and pseudo-ranges'''
+    """estimate ECEF position of receiver via least squares fit to satellite positions and pseudo-ranges"""
     pranges = satinfo.prCorrected
     weights = satelliteWeightings(satinfo)
 
@@ -135,12 +143,12 @@ def positionLeastSquares(satinfo):
         clk_err = clockLeastSquares_ranges(satinfo.ephemeris,
                                            satinfo.prCorrected,
                                            satinfo.raw.time_of_week,
-                                           (satinfo.reference_position.X, satinfo.reference_position.Y, satinfo.reference_position.Z),
+                                           (satinfo.reference_position.X, satinfo.reference_position.Y,
+                                            satinfo.reference_position.Z),
                                            0,
                                            weights)
 
         satinfo.receiver_clock_error = clk_err
-
 
     return newpos
 
@@ -148,12 +156,12 @@ def positionLeastSquares(satinfo):
 def calculatePrCorrections(satinfo):
     raw = satinfo.raw
     satinfo.reset()
-    errset={}
+    errset = {}
     for svid in raw.prMeasured:
 
         if not satinfo.valid(svid):
             # we don't have ephemeris data for this space vehicle
-            #print("not valid")
+            # print("not valid")
             continue
 
         # get the ephemeris and pseudo-range for this space vehicle
@@ -194,9 +202,9 @@ def calculatePrCorrections(satinfo):
 
         # get total range correction
         total_range_correction = ion_corr + tropo_corr
-        errset[svid]=-total_range_correction
+        errset[svid] = -total_range_correction
         # correct the pseudo-range for the clock and atmospheric errors
-        prCorrected = prSmooth + (sat_clock_error + sat_group_delay)*util.speedOfLight - total_range_correction
+        prCorrected = prSmooth + (sat_clock_error + sat_group_delay) * util.speedOfLight - total_range_correction
 
         # save the values in the satinfo object
         satinfo.prMeasured[svid] = prMes
@@ -209,9 +217,10 @@ def calculatePrCorrections(satinfo):
 
     save_satlog(raw.time_of_week, errset)
 
+
 def positionEstimate(satinfo):
-    '''process raw messages to calculate position
-    '''
+    """process raw messages to calculate position
+    """
 
     calculatePrCorrections(satinfo)
 

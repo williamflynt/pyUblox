@@ -1,9 +1,8 @@
 #! /usr/bin/env python
 
-import ublox
-import sys
-
 from pylab import *
+
+from . import ublox
 
 dev = ublox.UBlox(sys.argv[1])
 
