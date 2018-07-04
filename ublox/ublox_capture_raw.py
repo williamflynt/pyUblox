@@ -11,7 +11,7 @@ from optparse import OptionParser
 parser = OptionParser("ublox_capture_raw.py [options]")
 parser.add_option("--port", help="serial port", default='/dev/ttyACM0')
 parser.add_option("--baudrate", type='int',
-                  help="serial baud rate", default=115200)
+                  help="serial baud rate", default=9600)
 parser.add_option("--log", help="log file", default=None)
 parser.add_option("--append", action='store_true', default=False, help='append to log file')
 parser.add_option("--reopen", action='store_true', default=False, help='re-open on failure')
