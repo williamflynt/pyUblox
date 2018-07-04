@@ -1,6 +1,7 @@
 import struct
 
-from . import util, positionEstimate
+import positionEstimate
+import util
 
 
 class RTCMBits:

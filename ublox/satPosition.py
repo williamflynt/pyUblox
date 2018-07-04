@@ -7,7 +7,7 @@ from math import sqrt, atan, degrees
 
 import numpy
 
-from . import util
+import util
 
 
 def satPosition(satinfo, svid, transmitTime):

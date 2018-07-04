@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-'''
+"""
 test ublox parsing, packing and printing
-'''
-
-import sys, fnmatch, os
-
-from . import ublox
+"""
 
 from optparse import OptionParser
+
+import ublox
 
 parser = OptionParser("ublox_test.py [options] <file>")
 parser.add_option("-f", "--follow", action='store_true', default=False, help="ignore EOF")

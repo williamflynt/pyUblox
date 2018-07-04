@@ -3,7 +3,7 @@ pseudorange correction
 See http://home-2.worldonline.nl/~samsvl/pseucorr.htm
 """
 
-from . import util
+import util
 
 
 def sv_clock_correction(satinfo, svid, transmitTime, Trel):

@@ -9,11 +9,13 @@ Released under GNU GPL version 3 or later
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import serial
+import os
+import socket
 import struct
 import sys
 import time
-import os
+
+import serial
 
 # protocol constants
 PREAMBLE1 = 0xb5
@@ -681,7 +683,6 @@ class UBlox:
         self.debug_level = 0
 
         if self.serial_device.startswith("tcp:"):
-            import socket
             a = self.serial_device.split(':')
             destination_addr = (a[1], int(a[2]))
             self.dev = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -700,8 +701,8 @@ class UBlox:
                                          rtscts=False,
                                          xonxoff=False,
                                          timeout=timeout)
-            except serial.serialutil.SerialException:
-                print("Unable to connect to {}".format(self.serial_device))
+            except serial.serialutil.SerialException as e:
+                print("Unable to connect to {}.\nReturned {}".format(self.serial_device, e))
                 sys.exit(1)
         self.logfile = None
         self.log = None

@@ -7,7 +7,10 @@ import pybayes
 import pybayes.filters
 import pybayes.pdfs
 
-from . import satelliteData, positionEstimate, util, ublox
+import positionEstimate
+import satelliteData
+import ublox
+import util
 
 parser = OptionParser("pr_particlew.py [options] <file>")
 parser.add_option("--seek", type='float', default=0, help="seek percentage to start in log")

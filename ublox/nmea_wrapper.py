@@ -1,6 +1,9 @@
+import pynmea2.nmea
+import pynmea2.stream
 
-import pynmea.streamer, pynmea.nmea
-import util, os
+import os
+import util
+
 
 class FakeUbloxMessage:
 
@@ -9,20 +12,21 @@ class FakeUbloxMessage:
         self._fields = fields
 
     def __getattr__(self, name):
-        '''allow access to message fields'''
+        """allow access to message fields"""
         try:
             return self._fields[name]
         except KeyError:
             raise AttributeError(name)
 
     def __str__(self):
-        return name + ":" + str(self._fields)
+        return self.name + ":" + str(self._fields)
 
     def name(self):
         return self.name
 
     def unpack(self):
         pass
+
 
 class NMEAModule:
     def __init__(self, port, baudrate=38400, timeout=0.01):
@@ -41,26 +45,26 @@ class NMEAModule:
         self.log = None
         self.debug_level = 0
 
-        self.streamer = pynmea.streamer.NMEAStream()
+        self.streamer = pynmea2.stream.NMEAStreamReader()
 
         self.obj_buffer = []
 
     def close(self):
-	'''close the device'''
+        """close the device"""
         self.dev.close()
-	self.dev = None
+        self.dev = None
 
     def set_debug(self, debug_level):
-        '''set debug level'''
+        """set debug level"""
         self.debug_level = debug_level
 
     def debug(self, level, msg):
-        '''write a debug message'''
+        """write a debug message"""
         if self.debug_level >= level:
             print(msg)
 
     def set_logfile(self, logfile, append=False):
-	'''setup logging to a file'''
+        """setup logging to a file"""
         if self.log is not None:
             self.log.close()
             self.log = None
@@ -80,7 +84,7 @@ class NMEAModule:
 
         self.debug(0, l)
 
-        obs = self.streamer.get_objects(data=l)
+        obs = self.streamer.next(data=l)
 
         if len(obs) == 0:
             self.debug(1, "No object in line {}".format(l))
@@ -118,13 +122,9 @@ class NMEAModule:
             print(e)
             return None
 
-
     def write(self, buf):
         if not self.read_only:
             self.dev.write(buf)
 
     def module_reset(self):
         pass
-
-
-

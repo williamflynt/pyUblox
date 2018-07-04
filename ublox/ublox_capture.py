@@ -3,7 +3,7 @@
 import sys
 from optparse import OptionParser
 
-from . import ublox
+import ublox
 
 parser = OptionParser("ublox_capture.py [options]")
 parser.add_option("--port", help="serial port", default='/dev/ttyACM0')

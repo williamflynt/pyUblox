@@ -16,7 +16,10 @@ import time
 import bitstring as bs
 from bitstring import BitStream
 
-from . import satPosition, util, RTCMv2, positionEstimate
+import RTCMv2
+import positionEstimate
+import satPosition
+import util
 
 max_sats = 12
 

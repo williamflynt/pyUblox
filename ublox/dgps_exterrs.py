@@ -8,7 +8,7 @@ import sys
 import time
 from optparse import OptionParser
 
-from . import ublox, ephemeris, util, RTCMv2
+import ublox, ephemeris, util, RTCMv2
 
 parser = OptionParser("dgps_test.py [options]")
 parser.add_option("--port1", help="serial port 1", default='/dev/ttyACM0')

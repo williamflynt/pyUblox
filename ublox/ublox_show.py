@@ -4,7 +4,7 @@ import fnmatch
 import sys
 from optparse import OptionParser
 
-from . import ublox
+import ublox
 
 parser = OptionParser("ublox_show.py [options] <file>")
 parser.add_option("--types", default='*', help="comma separated list of types to show (wildcards allowed)")

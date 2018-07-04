@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 NAME = "py-ublox"
 VERSION = "0.1"
@@ -8,9 +8,10 @@ REQS = [
     "scipy==1.1.*",
     "matplotlib==2.2.*",
     "bitstring==3.1.*",
+    "pynmea2",
 ]
 
-#  pybayes with basic, untested Python3 conversion
+# pybayes with basic, untested Python3 conversion
 LINKS = [
     "git+git://github.com/Python3pkg/PyBayes.git",
 ]

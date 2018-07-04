@@ -6,7 +6,9 @@ import time
 
 from scipy import optimize
 
-from . import util, satPosition, rangeCorrection
+import rangeCorrection
+import satPosition
+import util
 
 logfile = time.strftime('satlog-klobuchar-%y%m%d-%H%M.txt')
 satlog = None

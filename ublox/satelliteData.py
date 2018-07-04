@@ -1,4 +1,6 @@
-from . import util, ephemeris, prSmooth
+import ephemeris
+import prSmooth
+import util
 
 
 class rawPseudoRange:

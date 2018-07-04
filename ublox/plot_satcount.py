@@ -2,7 +2,7 @@
 
 from pylab import *
 
-from . import ublox
+import ublox
 
 dev = ublox.UBlox(sys.argv[1])
 

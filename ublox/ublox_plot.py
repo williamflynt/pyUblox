@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 import math
+import time
 from optparse import OptionParser
 
 from matplotlib import pyplot
 
-import time
-from . import ublox, util
+import ublox
+import util
 
 parser = OptionParser("ublox_plot.py [options] <file>")
 parser.add_option("--seek", type='float', default=0, help="seek percentage to start in log")

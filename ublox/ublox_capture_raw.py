@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
+import struct
 import sys
 import time
-import struct
-
-from . import ublox, ephemeris
-
 from optparse import OptionParser
+
+import ephemeris
+import ublox
 
 parser = OptionParser("ublox_capture_raw.py [options]")
 parser.add_option("--port", help="serial port", default='/dev/ttyACM0')

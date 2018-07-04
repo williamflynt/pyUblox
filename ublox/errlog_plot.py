@@ -7,7 +7,7 @@ import numpy
 import pylab as plt
 import scipy.sparse
 
-from . import util, ublox
+import util, ublox
 
 parser = OptionParser("satlog_plot.py [options]")
 parser.add_option("--errlog", help="Position error log", default='errlog.txt')

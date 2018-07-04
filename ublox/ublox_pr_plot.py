@@ -7,7 +7,10 @@ import mpl_toolkits.axisartist as AA
 import numpy
 from mpl_toolkits.axes_grid1 import host_subplot
 
-from . import ublox, util, satelliteData, positionEstimate
+import positionEstimate
+import satelliteData
+import ublox
+import util
 
 parser = OptionParser("ublox_pr_plot.py [options] <file>")
 parser.add_option("--seek", type='float', default=0, help="seek percentage to start in log")

@@ -1,13 +1,19 @@
 #!/usr/bin/env python
-'''
+"""
 Locally-generated DGPS corrections, publish as UDP datagrams
-'''
+"""
 
-import ublox, sys, time, socket, struct
-import ephemeris, util, positionEstimate, satelliteData
-import RTCMv2
-
+import socket
+import struct
+import sys
+import time
 from optparse import OptionParser
+
+import RTCMv2
+import positionEstimate
+import satelliteData
+import ublox
+import util
 
 parser = OptionParser("local_to_udp.py [options]")
 parser.add_option("--port", help="serial port", default='/dev/ttyACM0')
@@ -27,8 +33,8 @@ parser.add_option("--module-reset", action='store_true', help="cold start all th
 parser.add_option("--udp-port", type='int', default=13320)
 parser.add_option("--udp-addr", default="127.0.0.1")
 
-
 (opts, args) = parser.parse_args()
+
 
 def setup_port(port, log, append=False):
     dev = ublox.UBlox(port, baudrate=opts.baudrate, timeout=0.01)
@@ -48,6 +54,7 @@ def setup_port(port, log, append=False):
     dev.configure_poll_port(ublox.PORT_SERIAL2)
     dev.configure_poll_port(ublox.PORT_USB)
     return dev
+
 
 dev1 = setup_port(opts.port, opts.log, append=opts.append)
 
@@ -73,32 +80,37 @@ else:
 
 logfile = time.strftime('satlog-local-%y%m%d-%H%M.txt')
 satlog = None
+
+
 def save_satlog(t, errset):
     global satlog
     if satlog is None:
         satlog = open(logfile, 'w')
 
-    eset = [ str(errset.get(s,'0')) for s in range(33) ]
+    eset = [str(errset.get(s, '0')) for s in range(33)]
 
     satlog.write(str(t) + "," + ",".join(eset) + "\n")
     satlog.flush()
+
 
 # which SV IDs we have seen
 svid_seen = {}
 svid_ephemeris = {}
 
+
 def handle_rxm_raw(msg):
-    '''handle a RXM_RAW message'''
+    """handle a RXM_RAW message"""
     global svid_seen, svid_ephemeris
 
     for i in range(msg.numSV):
         sv = msg.recs[i].sv
         tnow = time.time()
-        if not sv in svid_seen or tnow > svid_seen[sv]+30:
-            if sv in svid_ephemeris and svid_ephemeris[sv].timereceived+1800 < tnow:
+        if not sv in svid_seen or tnow > svid_seen[sv] + 30:
+            if sv in svid_ephemeris and svid_ephemeris[sv].timereceived + 1800 < tnow:
                 continue
             dev1.configure_poll(ublox.CLASS_AID, ublox.MSG_AID_EPH, struct.pack('<B', sv))
             svid_seen[sv] = tnow
+
 
 last_msg1_time = time.time()
 
@@ -114,15 +126,15 @@ elif opts.ecef_reference is not None:
 else:
     satinfo.reference_position = None
 
-
 satinfo.min_elevation = opts.minelevation
 satinfo.min_quality = opts.minquality
 
+
 def handle_device1(msg):
-    '''handle message from reference GPS'''
+    """handle message from reference GPS"""
     global messages, satinfo
-    
-    if msg.name() in [ 'RXM_RAW', 'NAV_POSECEF', 'RXM_SFRB', 'RXM_RAW', 'AID_EPH', 'NAV_POSECEF' ]:
+
+    if msg.name() in ['RXM_RAW', 'NAV_POSECEF', 'RXM_SFRB', 'RXM_RAW', 'AID_EPH', 'NAV_POSECEF']:
         try:
             msg.unpack()
             messages[msg.name()] = msg
@@ -133,11 +145,12 @@ def handle_device1(msg):
         handle_rxm_raw(msg)
         position_estimate(messages, satinfo)
 
-def position_estimate(messages, satinfo):
-    '''process raw messages to calculate position
-    '''
 
-    rxm_raw   = messages['RXM_RAW']
+def position_estimate(messages, satinfo):
+    """process raw messages to calculate position
+    """
+
+    rxm_raw = messages['RXM_RAW']
 
     pos = positionEstimate.positionEstimate(satinfo)
     if pos is None:
@@ -146,7 +159,7 @@ def position_estimate(messages, satinfo):
 
     rtcm = RTCMv2.generateRTCM2_Message1(satinfo, maxsats=10)
     if len(rtcm) != 0:
-        #print(rtcm)
+        # print(rtcm)
         rtcmfile.write(rtcm)
         port.sendto(rtcm[:-2], (opts.udp_addr, opts.udp_port))
 
@@ -155,7 +168,7 @@ def position_estimate(messages, satinfo):
         print(rtcm)
         rtcmfile.write(rtcm)
         port.sendto(rtcm[:-2], (opts.udp_addr, opts.udp_port))
-    
+
     errset = {}
     for svid in satinfo.rtcm_bits.error_history:
         errset[svid] = satinfo.rtcm_bits.error_history[svid][-1]
@@ -166,6 +179,7 @@ def position_estimate(messages, satinfo):
 
     return pos
 
+
 pos_count = 0
 
 while True:
@@ -175,7 +189,7 @@ while True:
         time.sleep(0.1)
         continue
 
-    #if msg is not None:
+    # if msg is not None:
     handle_device1(msg)
     last_msg1_time = time.time()
 

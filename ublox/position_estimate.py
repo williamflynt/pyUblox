@@ -6,7 +6,12 @@ estimate receiver position from RXM_RAW uBlox messages
 import sys
 from optparse import OptionParser
 
-from . import ublox, util, positionEstimate, satelliteData, RTCMv2, time
+import RTCMv2
+import positionEstimate
+import satelliteData
+import time
+import ublox
+import util
 
 parser = OptionParser("position_estimate.py [options] <file>")
 parser.add_option("--plot", action='store_true', default=False, help="plot points")

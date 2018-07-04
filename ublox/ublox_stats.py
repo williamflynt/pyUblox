@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
+import itertools
 import time
 from optparse import OptionParser
 
-import itertools
 import numpy
 
-from . import ublox, util
+import ublox
+import util
 
 parser = OptionParser("ublox_stats.py [options] <file>")
 parser.add_option("--seek", type='float', default=0, help="seek percentage to start in log")

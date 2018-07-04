@@ -7,7 +7,7 @@ import socket
 import time
 from optparse import OptionParser
 
-from . import RTCMv3_decode
+import RTCMv3_decode
 
 parser = OptionParser("ntrip_to_udp.py [options]")
 
