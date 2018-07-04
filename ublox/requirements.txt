@@ -2,3 +2,6 @@ pyserial==3.4
 numpy==1.14.*
 scipy==1.1.*
 matplotlib==2.2.*
+
+# pybayes with basic, untested Python3 conversion
+git+git://github.com/Python3pkg/PyBayes.git
