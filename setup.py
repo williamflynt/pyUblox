@@ -15,7 +15,7 @@ REQS = [
 setup(
     name=NAME,
     version=VERSION,
-    install_reqs=REQS,
+    install_requires=REQS,
     description="python uBlox module",
     author_email="william@williamflynt.com",
     url="https://github.com/williamflynt/pyUblox",
